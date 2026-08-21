@@ -58,7 +58,7 @@ services:
     depends_on:
       - redis-omnicanalidad
     ports:
-      - "6001:6001"
+      - "6011:6011"
     volumes:
       - backend_uploads:/app/uploads
       - backend_logs:/app/logs
