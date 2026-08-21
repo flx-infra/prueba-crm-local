@@ -1,0 +1,219 @@
+version: '3.8'
+
+services:
+  backend:
+    image: fabreguesm/omnicanalidad-backend:2.0.21
+    restart: unless-stopped
+    environment:
+      TZ: America/Argentina/Buenos_Aires
+      PORT: 6011
+      NODE_ENV: ${NODE_ENV:-production}
+      BACKEND_URL: ${BACKEND_URL:-http://10.250.0.98:6011}
+      DATABASE_URL: ${DATABASE_URL}
+      REDIS_URL: ${REDIS_URL:-redis://10.250.0.98:6383}
+      JWT_SECRET: ${JWT_SECRET:-change-this-secret-in-production}
+      JWT_EXPIRES_IN: ${JWT_EXPIRES_IN:-24h}
+      SALT_ROUNDS: ${SALT_ROUNDS:-10}
+      META_ACCESS_TOKEN: ${META_ACCESS_TOKEN}
+      META_WEBHOOK_SECRET: ${META_WEBHOOK_SECRET}
+      WA_PHONE_NUMBER_ID: ${WA_PHONE_NUMBER_ID}
+      IG_PAGE_ID: ${IG_PAGE_ID}
+      META_API_DEMO_MODE: ${META_API_DEMO_MODE:-false}
+      FACEBOOK_PAGE_ACCESS_TOKEN: ${FACEBOOK_PAGE_ACCESS_TOKEN}
+      FACEBOOK_PAGE_ID: ${FACEBOOK_PAGE_ID}
+      FACEBOOK_WEBHOOK_SECRET: ${FACEBOOK_WEBHOOK_SECRET}
+      USE_DISPATCHER: ${USE_DISPATCHER:-false}
+      DISPATCHER_URL: ${DISPATCHER_URL:-http://localhost:8081}
+      DISPATCHER_API_KEY: ${DISPATCHER_API_KEY}
+      META_APP_SECRET: ${META_APP_SECRET}
+      AUTO_ASSIGN_ENABLED: ${AUTO_ASSIGN_ENABLED:-true}
+      MAX_CONVERSATIONS_PER_VENDOR: ${MAX_CONVERSATIONS_PER_VENDOR:-10}
+      REASSIGN_INACTIVE_AFTER_MINUTES: ${REASSIGN_INACTIVE_AFTER_MINUTES:-60}
+      ESCALATE_TO_MANAGER_AFTER_HOURS: ${ESCALATE_TO_MANAGER_AFTER_HOURS:-4}
+      AUTO_CLOSE_AFTER_DAYS: ${AUTO_CLOSE_AFTER_DAYS:-1}
+      AUTO_CLOSE_INPROGRESS_AFTER_DAYS: ${AUTO_CLOSE_INPROGRESS_AFTER_DAYS:-3}
+      AUTO_CLOSE_INPROGRESS_ENABLED: ${AUTO_CLOSE_INPROGRESS_ENABLED:-true}
+      WA_DEFAULT_TEMPLATE: ${WA_DEFAULT_TEMPLATE:-Conversacion Cerrada por expiracion 24 hs.}
+      RULES_ENGINE_VERSION: ${RULES_ENGINE_VERSION:-v1}
+      RULES_ENABLE_MULTIPLE_MATCHES: ${RULES_ENABLE_MULTIPLE_MATCHES:-false}
+      RULES_ENABLE_VALIDATION: ${RULES_ENABLE_VALIDATION:-true}
+      EMAIL_POLL_INTERVAL_SECONDS: ${EMAIL_POLL_INTERVAL_SECONDS:-120}
+      EMAIL_CREDENTIALS_ENCRYPTION_KEY: ${EMAIL_CREDENTIALS_ENCRYPTION_KEY}
+      EMAIL_MAX_FETCH_PER_POLL: ${EMAIL_MAX_FETCH_PER_POLL:-50}
+      SENDGRID_API_KEY: ${SENDGRID_API_KEY}
+      ERP_API_URL: ${ERP_API_URL:-http://10.250.0.98:5019}
+      ERP_API_USERNAME: ${ERP_API_USERNAME}
+      ERP_API_PASSWORD: ${ERP_API_PASSWORD}
+      ERP_API_DEVICE_UUID: ${ERP_API_DEVICE_UUID}
+      ERP_API_DEVICE_MODEL: ${ERP_API_DEVICE_MODEL:-Omnicanalidad}
+      ERP_API_DEVICE_PLATFORM: ${ERP_API_DEVICE_PLATFORM:-nodejs}
+      ERP_API_DEVICE_VERSION: ${ERP_API_DEVICE_VERSION:-1.0.0}
+      ERP_API_DEVICE_MANUFACTURER: ${ERP_API_DEVICE_MANUFACTURER:-Internal}
+      ERP_API_TIMEOUT: ${ERP_API_TIMEOUT:-30000}
+      FRONTEND_URL: ${FRONTEND_URL:-http://10.250.0.98:6002}
+      LOG_LEVEL: ${LOG_LEVEL:-info}
+      EXTERNAL_API_KEY: ${EXTERNAL_API_KEY:-dev-external-key-change-in-production}
+      UPLOADS_DIR: ${UPLOADS_DIR:-/app/uploads}
+      IG_ACCESS_TOKEN: ${IG_ACCESS_TOKEN}
+    depends_on:
+      - redis-omnicanalidad
+    ports:
+      - "6001:6001"
+    volumes:
+      - backend_uploads:/app/uploads
+      - backend_logs:/app/logs
+    networks:
+      - traefik
+    healthcheck:
+      test: ["CMD", "node", "-e", "require('http').get('http://localhost:6011/health', (r) => {process.exit(r.statusCode === 200 ? 0 : 1)})"]
+      interval: 30s
+      timeout: 10s
+      retries: 5
+      start_period: 120s
+    deploy:
+      placement:
+        constraints:
+          - ${NODE}
+      labels:
+        - "traefik.enable=true"
+        - "traefik.http.routers.${SERVICE_NAME}.entrypoints=web"
+        - "traefik.http.routers.${SERVICE_NAME}.rule=Host(`${DOMAIN_NAME}`)"
+        - "traefik.http.middlewares.${SERVICE_NAME}-http.redirectscheme.scheme=https"
+        - "traefik.http.routers.${SERVICE_NAME}-https.rule=Host(`${DOMAIN_NAME}`)"
+        - "traefik.http.routers.${SERVICE_NAME}-https.entrypoints=https"
+        - "traefik.http.routers.${SERVICE_NAME}-https.tls=true"
+        - "traefik.http.routers.${SERVICE_NAME}-https.tls.certresolver=myresolver"
+        - "traefik.http.services.${SERVICE_NAME}.loadbalancer.server.port=6001"           
+      restart_policy:
+        condition: on-failure
+        max_attempts: 3
+    logging:
+      driver: loki
+      options:
+        loki-url: ${LOKI_URL}
+
+  frontend:
+    image: fabreguesm/omnicanalidad-frontend:2.0.21
+    restart: unless-stopped
+    command: ["nginx", "-g", "daemon off;"]
+    environment:
+      REACT_APP_API_URL: ${REACT_APP_API_URL:-http://localhost:6012/api}
+      REACT_APP_SHOW_WORKFLOWS: ${REACT_APP_SHOW_WORKFLOWS:-true}
+      REACT_APP_SHOW_RULES_BANNER: ${REACT_APP_SHOW_RULES_BANNER:-false}
+      REACT_APP_SHOW_CRM: ${REACT_APP_SHOW_CRM:-true}
+      # Upstream interno para que nginx proxypasee /api/admin/queues (Bull Board)
+      # al backend manteniendo mismo origen que el SPA (necesario para el cookie auth).
+      BACKEND_INTERNAL_URL: ${BACKEND_INTERNAL_URL:-http://backend:6011}
+    ports:
+      - "${FRONTEND_PORT:-6012}:80"
+    networks:
+      - traefik
+    depends_on:
+      - backend
+    deploy:
+      placement:
+        constraints:
+          - ${NODE}
+      restart_policy:
+        condition: on-failure
+        max_attempts: 3
+    logging:
+      driver: loki
+      options:
+        loki-url: ${LOKI_URL}
+
+  redis-omnicanalidad:
+    image: redis:7-alpine
+    restart: unless-stopped
+    command: redis-server --appendonly yes
+    ports:
+      - "6383:6379"
+    volumes:
+      - redis_data:/data
+    networks:
+      - traefik
+    healthcheck:
+      test: ["CMD", "redis-cli", "ping"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+      start_period: 10s
+    deploy:
+      placement:
+        constraints:
+          - ${NODE}
+      restart_policy:
+        condition: on-failure
+        max_attempts: 3
+
+  worker:
+    image: fabreguesm/omnicanalidad-backend:2.0.21
+    restart: unless-stopped
+    command: ["node", "dist/workers/index.js"]
+    networks:
+      - traefik
+    healthcheck:
+      test: ["CMD", "node", "-e", "process.exit(0)"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+      start_period: 15s  
+    environment:
+      TZ: America/Argentina/Buenos_Aires
+      NODE_ENV: ${NODE_ENV:-production}
+      DATABASE_URL: ${DATABASE_URL}
+      REDIS_URL: ${REDIS_URL:-redis://10.250.0.98:6383}
+      JWT_SECRET: ${JWT_SECRET:-change-this-secret-in-production}
+      EMAIL_POLL_INTERVAL_SECONDS: ${EMAIL_POLL_INTERVAL_SECONDS:-120}
+      EMAIL_CREDENTIALS_ENCRYPTION_KEY: ${EMAIL_CREDENTIALS_ENCRYPTION_KEY}
+      EMAIL_MAX_FETCH_PER_POLL: ${EMAIL_MAX_FETCH_PER_POLL:-50}
+      META_ACCESS_TOKEN: ${META_ACCESS_TOKEN}
+      META_WEBHOOK_SECRET: ${META_WEBHOOK_SECRET}
+      WA_PHONE_NUMBER_ID: ${WA_PHONE_NUMBER_ID}
+      SENDGRID_API_KEY: ${SENDGRID_API_KEY}
+      ERP_API_URL: ${ERP_API_URL:-http://10.250.0.98:5019}
+      ERP_API_USERNAME: ${ERP_API_USERNAME}
+      ERP_API_PASSWORD: ${ERP_API_PASSWORD}
+      ERP_API_DEVICE_UUID: ${ERP_API_DEVICE_UUID}
+      ERP_API_DEVICE_MODEL: ${ERP_API_DEVICE_MODEL:-Omnicanalidad}
+      ERP_API_DEVICE_PLATFORM: ${ERP_API_DEVICE_PLATFORM:-nodejs}
+      ERP_API_DEVICE_VERSION: ${ERP_API_DEVICE_VERSION:-1.0.0}
+      ERP_API_DEVICE_MANUFACTURER: ${ERP_API_DEVICE_MANUFACTURER:-Internal}
+      ERP_API_TIMEOUT: ${ERP_API_TIMEOUT:-30000}
+      WORKFLOW_MAX_CONCURRENT: ${WORKFLOW_MAX_CONCURRENT:-10}
+      WORKFLOW_MAX_PER_COMPANY: ${WORKFLOW_MAX_PER_COMPANY:-5}
+      SCHEDULER_MAX_CONCURRENT: ${SCHEDULER_MAX_CONCURRENT:-2}
+      SCHEDULER_EXECUTION_TIMEOUT_MS: ${SCHEDULER_EXECUTION_TIMEOUT_MS:-600000}
+      NODE_OPTIONS: ${NODE_OPTIONS:---max-old-space-size=2048}
+      LOG_LEVEL: ${LOG_LEVEL:-info}
+      UPLOADS_DIR: ${UPLOADS_DIR:-/app/uploads}
+      IG_ACCESS_TOKEN: ${UPLOADS_DIR}
+    volumes:
+      - backend_uploads:/app/uploads
+      - backend_logs:/app/logs
+    deploy:
+      placement:
+        constraints:
+          - ${NODE}
+      restart_policy:
+        condition: on-failure
+        max_attempts: 3
+    logging:
+      driver: loki
+      options:
+        loki-url: ${LOKI_URL}
+
+networks:
+  traefik:
+    name: traefik-network
+    external: true
+
+volumes:
+  backend_uploads:
+    name: omnicanalidad-backend-uploads
+  backend_crm_documents:
+    name: omnicanalidad-backend-crm-documents
+  backend_logs:
+    name: omnicanalidad-backend-logs
+  redis_data:
+    name: omnicanalidad-redis-data-omnicanalidad
