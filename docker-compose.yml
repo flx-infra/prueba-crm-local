@@ -56,7 +56,7 @@ services:
       UPLOADS_DIR: ${UPLOADS_DIR:-/app/uploads}
       IG_ACCESS_TOKEN: ${IG_ACCESS_TOKEN}
     depends_on:
-      - redis-omnicanalidad
+      - redis-prueba-local
     ports:
       - "6021:6021"
     volumes:
@@ -122,7 +122,7 @@ services:
       options:
         loki-url: ${LOKI_URL}
 
-  redis-omnicanalidad:
+  redis-prueba-local:
     image: redis:7-alpine
     restart: unless-stopped
     command: redis-server --appendonly yes
@@ -210,10 +210,10 @@ networks:
 
 volumes:
   backend_uploads:
-    name: omnicanalidad-backend-uploads
+    name: pruebalocal-backend-uploads
   backend_crm_documents:
-    name: omnicanalidad-backend-crm-documents
+    name: pruebalocal-backend-crm-documents
   backend_logs:
-    name: omnicanalidad-backend-logs
+    name: pruebalocal-backend-logs
   redis_data:
-    name: omnicanalidad-redis-data-omnicanalidad
+    name: pruebalocal-redis-data-omnicanalidad
