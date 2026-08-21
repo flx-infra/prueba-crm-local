@@ -6,9 +6,9 @@ services:
     restart: unless-stopped
     environment:
       TZ: America/Argentina/Buenos_Aires
-      PORT: 6011
+      PORT: 6021
       NODE_ENV: ${NODE_ENV:-production}
-      BACKEND_URL: ${BACKEND_URL:-http://10.250.0.98:6011}
+      BACKEND_URL: ${BACKEND_URL:-http://10.250.0.98:6021}
       DATABASE_URL: ${DATABASE_URL}
       REDIS_URL: ${REDIS_URL:-redis://10.250.0.98:6383}
       JWT_SECRET: ${JWT_SECRET:-change-this-secret-in-production}
@@ -58,14 +58,14 @@ services:
     depends_on:
       - redis-omnicanalidad
     ports:
-      - "6011:6011"
+      - "6021:6021"
     volumes:
       - backend_uploads:/app/uploads
       - backend_logs:/app/logs
     networks:
       - traefik
     healthcheck:
-      test: ["CMD", "node", "-e", "require('http').get('http://localhost:6011/health', (r) => {process.exit(r.statusCode === 200 ? 0 : 1)})"]
+      test: ["CMD", "node", "-e", "require('http').get('http://localhost:6021/health', (r) => {process.exit(r.statusCode === 200 ? 0 : 1)})"]
       interval: 30s
       timeout: 10s
       retries: 5
@@ -97,15 +97,15 @@ services:
     restart: unless-stopped
     command: ["nginx", "-g", "daemon off;"]
     environment:
-      REACT_APP_API_URL: ${REACT_APP_API_URL:-http://localhost:6012/api}
+      REACT_APP_API_URL: ${REACT_APP_API_URL:-http://localhost:6022/api}
       REACT_APP_SHOW_WORKFLOWS: ${REACT_APP_SHOW_WORKFLOWS:-true}
       REACT_APP_SHOW_RULES_BANNER: ${REACT_APP_SHOW_RULES_BANNER:-false}
       REACT_APP_SHOW_CRM: ${REACT_APP_SHOW_CRM:-true}
       # Upstream interno para que nginx proxypasee /api/admin/queues (Bull Board)
       # al backend manteniendo mismo origen que el SPA (necesario para el cookie auth).
-      BACKEND_INTERNAL_URL: ${BACKEND_INTERNAL_URL:-http://backend:6011}
+      BACKEND_INTERNAL_URL: ${BACKEND_INTERNAL_URL:-http://backend:6021}
     ports:
-      - "${FRONTEND_PORT:-6012}:80"
+      - "${FRONTEND_PORT:-6022}:80"
     networks:
       - traefik
     depends_on:
