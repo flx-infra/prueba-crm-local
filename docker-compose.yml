@@ -105,7 +105,7 @@ services:
       REACT_APP_SHOW_CRM: ${REACT_APP_SHOW_CRM:-true}
       # Upstream interno para que nginx proxypasee /api/admin/queues (Bull Board)
       # al backend manteniendo mismo origen que el SPA (necesario para el cookie auth).
-      BACKEND_INTERNAL_URL: ${BACKEND_INTERNAL_URL:-http://backend:6021}
+      BACKEND_INTERNAL_URL: ${BACKEND_INTERNAL_URL:-http://10.250.0.98:6021}
     ports:
       - "${FRONTEND_PORT:-6022}:80"
     networks:
