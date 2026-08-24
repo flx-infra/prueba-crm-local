@@ -122,6 +122,79 @@ services:
       options:
         loki-url: ${LOKI_URL}
         
+    filebrowser:
+    image: hurlenko/filebrowser:v2.10.0
+    user: "0:0"
+    ports:
+      - 8080
+    volumes:
+      - node_data:/data
+      - factura_data:/data/factura_electronica
+      - pdf_data:/data/pdf
+      - fb_data:/data/config
+      - backend_uploads:/data/app/uploads
+      - backend_crm_documents:/data/app/documents
+      - backend_logs:/data/app/logs
+    deploy:
+      labels:
+      - "traefik.enable=true"
+      - "traefik.http.routers.${FQDN_NOTDOT}-http-fb.entrypoints=web"
+      - "traefik.http.routers.${FQDN_NOTDOT}-http-fb.rule=Host(`${PS_DOMAIN_FRONTEND}`) && PathPrefix(`/filebrowser`) || Host(`www.${PS_DOMAIN_FRONTEND}`) && PathPrefix(`/filebrowser`)"
+      - "traefik.http.routers.${FQDN_NOTDOT}-http-fb.middlewares=https_redirect"
+      - "traefik.http.routers.${FQDN_NOTDOT}-https-fb.rule=Host(`${PS_DOMAIN_FRONTEND}`) && PathPrefix(`/filebrowser`) || Host(`www.${PS_DOMAIN_FRONTEND}`) && PathPrefix(`/filebrowser`)"
+      - "traefik.http.routers.${FQDN_NOTDOT}-https-fb.entrypoints=https"
+      - "traefik.http.routers.${FQDN_NOTDOT}-https-fb.tls=true"
+      - "traefik.http.services.${FQDN_NOTDOT}-https-fb.loadbalancer.server.port=8080"
+      - "traefik.http.middlewares.https_redirect.redirectscheme.scheme=https"
+      - "traefik.http.routers.${FQDN_NOTDOT}-https-fb.middlewares=RuleGrpSlash"
+      placement:
+        constraints: ["${NODE}"]
+      resources:
+        limits:
+          cpus: '0.25'
+          memory: 128M
+    environment:
+      - FB_PASSWORD=$$2a$$10$$v174TC2HFsPfoEXMkXlrH.wpmUzGsUPpnSf.xOUp1IK1s4tndTKFy
+      - FB_BASEURL=/filebrowser/
+    restart: always
+    networks:
+      - traefik
+
+  filebrowser2:
+    image: hurlenko/filebrowser:v2.10.0
+    user: "0:0"
+    ports:
+      - 8080
+    volumes:
+      - node_data:/data
+      - factura_data:/data/factura_electronica
+      - pdf_data:/data/pdf
+      - fb_data2:/data/config
+    deploy:
+      labels:
+      - "traefik.enable=true"
+      - "traefik.http.routers.${FQDN_NOTDOT_API}-http-fb.entrypoints=web"
+      - "traefik.http.routers.${FQDN_NOTDOT_API}-http-fb.rule=Host(`${PS_DOMAIN}`) && PathPrefix(`/filebrowser`) || Host(`www.${PS_DOMAIN}`) && PathPrefix(`/filebrowser`)"
+      - "traefik.http.routers.${FQDN_NOTDOT_API}-http-fb.middlewares=https_redirect"
+      - "traefik.http.routers.${FQDN_NOTDOT_API}-https-fb.rule=Host(`${PS_DOMAIN}`) && PathPrefix(`/filebrowser`) || Host(`www.${PS_DOMAIN}`) && PathPrefix(`/filebrowser`)"
+      - "traefik.http.routers.${FQDN_NOTDOT_API}-https-fb.entrypoints=https"
+      - "traefik.http.routers.${FQDN_NOTDOT_API}-https-fb.tls=true"
+      - "traefik.http.services.${FQDN_NOTDOT_API}-https-fb.loadbalancer.server.port=8080"
+      - "traefik.http.middlewares.https_redirect.redirectscheme.scheme=https"
+      - "traefik.http.routers.${FQDN_NOTDOT_API}-https-fb.middlewares=RuleGrpSlash"
+      placement:
+        constraints: ["${NODE}"]
+      resources:
+        limits:
+          cpus: '0.25'
+          memory: 128M
+    environment:
+      - FB_PASSWORD=$$2a$$10$$v174TC2HFsPfoEXMkXlrH.wpmUzGsUPpnSf.xOUp1IK1s4tndTKFy
+      - FB_BASEURL=/filebrowser/
+    restart: always
+    networks:
+      - traefik
+
   nodejs:
     image: fabreguesm/flxwebapi-v4:2.8.336.2
     networks:
@@ -248,3 +321,13 @@ volumes:
     name: pruebalocal-backend-logs
   redis_data:
     name: pruebalocal-redis-data-omnicanalidad
+  node_data:
+    name: "${FQDN_NOTDOT}_node-data"
+  factura_data:
+    name: "${FQDN_NOTDOT}_factura-data"
+  pdf_data:
+    name: "${FQDN_NOTDOT}_pdf-data"
+  fb_data:
+    name: "${FQDN_NOTDOT}_fbrowser-data"
+  fb_data2:
+    name: "${FQDN_NOTDOT_API}_fbrowser-data2"    
