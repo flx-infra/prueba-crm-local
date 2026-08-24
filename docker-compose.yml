@@ -124,7 +124,7 @@ services:
       options:
         loki-url: ${LOKI_URL}
         
-    filebrowser:
+  filebrowser:
     image: hurlenko/filebrowser:v2.10.0
     user: "0:0"
     ports:
