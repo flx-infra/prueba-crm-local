@@ -4,6 +4,8 @@ services:
   backend:
     image: fabreguesm/omnicanalidad-backend:2.0.21
     restart: unless-stopped
+    extra_hosts:       
+      - "crmlocalpruebaapi.procomisp.com.ar:10.150.4.98"
     environment:
       TZ: America/Argentina/Buenos_Aires
       PORT: 6021
