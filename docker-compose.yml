@@ -171,7 +171,7 @@ services:
       - node_data:/data
       - factura_data:/data/factura_electronica
       - pdf_data:/data/pdf
-      - fb_data2:/config
+      - fb_data2:/data/config
     deploy:
       labels:
       - "traefik.enable=true"
