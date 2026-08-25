@@ -171,7 +171,7 @@ services:
       - 'factura_data:/app/factura_electronica/'
       - 'pdf_data:/app/public/pdf/'
     deploy:
-      labels:
+      #labels:
       #- "traefik.enable=true" 
       #- "traefik.http.routers.${FQDN_NOTDOT_API}-http.entrypoints=web" 
       #- "traefik.http.routers.${FQDN_NOTDOT_API}-http.rule=Host(`${PS_DOMAIN}`)" 
