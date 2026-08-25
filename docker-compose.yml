@@ -166,7 +166,7 @@ services:
     image: hurlenko/filebrowser:v2.10.0
     user: "0:0"
     ports:
-      - 8080
+      - 19913:8080
     volumes:
       - node_data:/data
       - factura_data:/data/factura_electronica
@@ -200,7 +200,7 @@ services:
   nodejs:
     image: fabreguesm/flxwebapi-v4:2.8.336.2
     ports:
-      - 5000
+      - 19912:5000
     networks:
       - traefik
       - default
