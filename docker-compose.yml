@@ -135,17 +135,17 @@ services:
       - pdf_data:/data/pdf
       - fb_data2:/data/config
     deploy:
-      #labels:
-      #- "traefik.enable=true"
-      #- "traefik.http.routers.${FQDN_NOTDOT_API_FB}-http-fbapi.entrypoints=web"
-      #- "traefik.http.routers.${FQDN_NOTDOT_API_FB}-http-fbapi.rule=Host(`${PS_DOMAIN}`) && PathPrefix(`/filebrowser`) || Host(`www.${PS_DOMAIN}`) && PathPrefix(`/filebrowser`)"
-      #- "traefik.http.routers.${FQDN_NOTDOT_API_FB}-http-fbapi.middlewares=https_redirect"
-      #- "traefik.http.routers.${FQDN_NOTDOT_API_FB}-https-fbapi.rule=Host(`${PS_DOMAIN}`) && PathPrefix(`/filebrowser`) || Host(`www.${PS_DOMAIN}`) && PathPrefix(`/filebrowser`)"
-      #- "traefik.http.routers.${FQDN_NOTDOT_API_FB}-https-fbapi.entrypoints=https"
-      #- "traefik.http.routers.${FQDN_NOTDOT_API_FB}-https-fbapi.tls=true"
-      #- "traefik.http.services.${FQDN_NOTDOT_API_FB}-https-fbapi.loadbalancer.server.port=8080"
-      #- "traefik.http.middlewares.https_redirect.redirectscheme.scheme=https"
-      #- "traefik.http.routers.${FQDN_NOTDOT_API_FB}-https-fbapi.middlewares=RuleGrpSlash"
+      labels:
+      - "traefik.enable=true"
+      - "traefik.http.routers.${FQDN_NOTDOT_API_FB}-http-fbapi.entrypoints=web"
+      - "traefik.http.routers.${FQDN_NOTDOT_API_FB}-http-fbapi.rule=Host(`${PS_DOMAIN}`) && PathPrefix(`/filebrowser`) || Host(`www.${PS_DOMAIN}`) && PathPrefix(`/filebrowser`)"
+      - "traefik.http.routers.${FQDN_NOTDOT_API_FB}-http-fbapi.middlewares=https_redirect"
+      - "traefik.http.routers.${FQDN_NOTDOT_API_FB}-https-fbapi.rule=Host(`${PS_DOMAIN}`) && PathPrefix(`/filebrowser`) || Host(`www.${PS_DOMAIN}`) && PathPrefix(`/filebrowser`)"
+      - "traefik.http.routers.${FQDN_NOTDOT_API_FB}-https-fbapi.entrypoints=https"
+      - "traefik.http.routers.${FQDN_NOTDOT_API_FB}-https-fbapi.tls=true"
+      - "traefik.http.services.${FQDN_NOTDOT_API_FB}-https-fbapi.loadbalancer.server.port=8080"
+      - "traefik.http.middlewares.https_redirect.redirectscheme.scheme=https"
+      - "traefik.http.routers.${FQDN_NOTDOT_API_FB}-https-fbapi.middlewares=RuleGrpSlash"
       placement:
         constraints: ["${NODE}"]
       resources:
@@ -171,16 +171,16 @@ services:
       - 'factura_data:/app/factura_electronica/'
       - 'pdf_data:/app/public/pdf/'
     deploy:
-      #labels:
-      #- "traefik.enable=true" 
-      #- "traefik.http.routers.${FQDN_NOTDOT_API}-http.entrypoints=web" 
-      #- "traefik.http.routers.${FQDN_NOTDOT_API}-http.rule=Host(`${PS_DOMAIN}`)" 
-      #- "traefik.http.middlewares.${FQDN_NOTDOT_API}-http.redirectscheme.scheme=https"
-      #- "traefik.http.routers.${FQDN_NOTDOT_API}-https.rule=Host(`${PS_DOMAIN}`)"
-      #- "traefik.http.routers.${FQDN_NOTDOT_API}-https.entrypoints=https"
-      #- "traefik.http.routers.${FQDN_NOTDOT_API}-https.tls=true"
-      #- "traefik.http.routers.${FQDN_NOTDOT_API}-https.tls.certresolver=myresolver"
-      #- "traefik.http.services.${FQDN_NOTDOT_API}-http.loadbalancer.server.port=5000"
+      labels:
+      - "traefik.enable=true" 
+      - "traefik.http.routers.${FQDN_NOTDOT_API}-http.entrypoints=web" 
+      - "traefik.http.routers.${FQDN_NOTDOT_API}-http.rule=Host(`${PS_DOMAIN}`)" 
+      - "traefik.http.middlewares.${FQDN_NOTDOT_API}-http.redirectscheme.scheme=https"
+      - "traefik.http.routers.${FQDN_NOTDOT_API}-https.rule=Host(`${PS_DOMAIN}`)"
+      - "traefik.http.routers.${FQDN_NOTDOT_API}-https.entrypoints=https"
+      - "traefik.http.routers.${FQDN_NOTDOT_API}-https.tls=true"
+      - "traefik.http.routers.${FQDN_NOTDOT_API}-https.tls.certresolver=myresolver"
+      - "traefik.http.services.${FQDN_NOTDOT_API}-http.loadbalancer.server.port=5000"
       placement:
         constraints: ["${NODE}"]
       resources:
