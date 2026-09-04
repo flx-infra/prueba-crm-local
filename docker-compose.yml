@@ -57,6 +57,9 @@ services:
       EXTERNAL_API_KEY: ${EXTERNAL_API_KEY:-dev-external-key-change-in-production}
       UPLOADS_DIR: ${UPLOADS_DIR:-/app/uploads}
       IG_ACCESS_TOKEN: ${IG_ACCESS_TOKEN}
+      PROVIDER_PROVISIONING_DRIVER: ${PROVIDER_PROVISIONING_DRIVER}
+      MAILJET_PARENT_API_KEY: ${MAILJET_PARENT_API_KEY}
+      MAILJET_PARENT_API_SECRET: ${MAILJET_PARENT_API_SECRET}
     depends_on:
       - redis-prueba-local
     ports:
@@ -258,6 +261,9 @@ services:
       LOG_LEVEL: ${LOG_LEVEL:-info}
       UPLOADS_DIR: ${UPLOADS_DIR:-/app/uploads}
       IG_ACCESS_TOKEN: ${UPLOADS_DIR}
+      PROVIDER_PROVISIONING_DRIVER: ${PROVIDER_PROVISIONING_DRIVER}
+      MAILJET_PARENT_API_KEY: ${MAILJET_PARENT_API_KEY}
+      MAILJET_PARENT_API_SECRET: ${MAILJET_PARENT_API_SECRET}
     volumes:
       - backend_uploads:/app/uploads
       - backend_logs:/app/logs
