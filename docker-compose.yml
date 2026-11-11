@@ -168,7 +168,7 @@ services:
       - traefik
 
   nodejs:
-    image: fabreguesm/flxwebapi-v4:2.8.336.2
+    image: fabreguesm/flxwebapi-v4:2.8.338.3
     ports:
       - 19912:5000
     networks:
