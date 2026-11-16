@@ -2,7 +2,7 @@ version: '3.8'
 
 services:
   backend:
-    image: fabreguesm/omnicanalidad-backend:staging
+    image: fabreguesm/omnicanalidad-backend-staging:1.0.5
     restart: unless-stopped
     extra_hosts:       
       - "crmlocalpruebaapi.flexxus.com.ar:10.250.0.98"
@@ -103,7 +103,7 @@ services:
         loki-url: ${LOKI_URL}
 
   frontend:
-    image: fabreguesm/omnicanalidad-frontend:staging
+    image: fabreguesm/omnicanalidad-frontend-staging:1.0.5
     restart: unless-stopped
     command: ["nginx", "-g", "daemon off;"]
     environment:
@@ -225,7 +225,7 @@ services:
         max_attempts: 3
 
   worker:
-    image: fabreguesm/omnicanalidad-backend:staging
+    image: fabreguesm/omnicanalidad-backend-staging:1.0.5
     restart: unless-stopped
     command: ["node", "dist/workers/index.js"]
     networks:
